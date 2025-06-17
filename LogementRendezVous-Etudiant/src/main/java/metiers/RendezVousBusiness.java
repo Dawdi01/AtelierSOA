@@ -8,72 +8,76 @@ import java.util.Iterator;
 import java.util.List;
 
 public class RendezVousBusiness {
-    public static List<RendezVous> listeRendezVous;
-    LogementBusiness logementMetier=new LogementBusiness();
-    public RendezVousBusiness() {
-      listeRendezVous = new ArrayList<>();
-    }
 
+    private static List<RendezVous> listeRendezVous = new ArrayList<>();
+    private static int compteurId = 1; // pour générer des IDs uniques
 
-    public boolean addRendezVous(RendezVous rendezVous){
+    private final LogementBusiness logementMetier = new LogementBusiness();
 
-        int refLogement=rendezVous.getLogement().getReference();
+    public boolean addRendezVous(RendezVous rendezVous) {
+        int refLogement = rendezVous.getLogement().getReference();
+        Logement logement = logementMetier.getLogementsByReference(refLogement);
 
-        Logement logement=logementMetier.getLogementsByReference(refLogement);
-
-        if(logement!=null){
+        if (logement != null) {
             rendezVous.setLogement(logement);
-            return listeRendezVous.add(rendezVous);}
+            rendezVous.setId(compteurId++); // assigner un ID unique
+            return listeRendezVous.add(rendezVous);
+        }
         return false;
     }
+
     public List<RendezVous> getListeRendezVous() {
-        return listeRendezVous;
+        return new ArrayList<>(listeRendezVous);
     }
 
-    public void setListeRendezVous(List<RendezVous> listeRendezVous) {
-        this.listeRendezVous = listeRendezVous;
+    public void setListeRendezVous(List<RendezVous> liste) {
+        listeRendezVous = new ArrayList<>(liste);
     }
+
     public List<RendezVous> getListeRendezVousByLogementReference(int reference) {
-        List<RendezVous> liste=new ArrayList<RendezVous>();
-        for(RendezVous r:listeRendezVous){
-            if(r.getLogement().getReference()==reference)
+        List<RendezVous> liste = new ArrayList<>();
+        for (RendezVous r : listeRendezVous) {
+            if (r.getLogement().getReference() == reference) {
                 liste.add(r);
+            }
         }
         return liste;
     }
-    public RendezVous getRendezVousById(int id){
-        RendezVous rendezVous=null;
-        for(RendezVous r:listeRendezVous){
-            if(r.getId()==id)
-                rendezVous=r;
+
+    public RendezVous getRendezVousById(int id) {
+        for (RendezVous r : listeRendezVous) {
+            if (r.getId() == id) {
+                return r;
+            }
         }
-        return rendezVous;
+        return null;
     }
-    public boolean deleteRendezVous(int id){
-        Iterator<RendezVous> iterator=listeRendezVous.iterator();
-        while(iterator.hasNext()){
-            RendezVous r=iterator.next();
-            if(r.getId()==id){
+
+    public boolean deleteRendezVous(int id) {
+        Iterator<RendezVous> iterator = listeRendezVous.iterator();
+        while (iterator.hasNext()) {
+            RendezVous r = iterator.next();
+            if (r.getId() == id) {
                 iterator.remove();
                 return true;
             }
         }
         return false;
     }
-    public boolean updateRendezVous(int idRendezVous, RendezVous updatedRendezVous) {
+
+    public boolean updateRendezVous(int id, RendezVous updatedRdv) {
         for (int i = 0; i < listeRendezVous.size(); i++) {
             RendezVous r = listeRendezVous.get(i);
-            if (r.getId() == idRendezVous) {
-
-                Logement logement = logementMetier.getLogementsByReference(updatedRendezVous.getLogement().getReference());
+            if (r.getId() == id) {
+                Logement logement = logementMetier.getLogementsByReference(updatedRdv.getLogement().getReference());
                 if (logement != null) {
-
-                    listeRendezVous.set(i, updatedRendezVous);
+                    updatedRdv.setId(id);
+                    updatedRdv.setLogement(logement);
+                    listeRendezVous.set(i, updatedRdv);
                     return true;
                 }
             }
         }
         return false;
     }
-
 }
